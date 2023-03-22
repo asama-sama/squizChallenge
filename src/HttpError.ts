@@ -2,10 +2,7 @@
 // status code to return to the user
 export class HttpError extends Error {
   
-  status
-
-  constructor(message: string, status: number) {
+  constructor(message: string, public status: number) {
     super(message)
-    this.status = status
   }
 }

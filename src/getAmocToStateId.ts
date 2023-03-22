@@ -1,25 +1,33 @@
-// fix: document the intention of this function
-// fix: update input and output types to use enums rather than strings since the output is well known
-export function getAmocToStateId(state: string): string {
-  // fix: call to uppercase on state to ensure input is in caps
+enum Amoc {
+  "IDD" = "IDD",
+  "IDN" = "IDN",
+  "IDQ" = "IDQ",
+  "IDS" = "IDS",
+  "IDT" = "IDT",
+  "IDV" = "IDV",
+  "IDW" = "IDW",
+  "unk" = "unk"
+}
+export function getAmocToStateId(state: string): Amoc {
+  state = state.toUpperCase()
   switch (state) {
     case "NT":
-      return "IDD";
+      return Amoc.IDD;
     case "NSW":
-      return "IDN";
-    case "Qld": // fix: make all caps to be consistent with rest
-      return "IDQ";
+      return Amoc.IDN;
+    case "QLD":
+      return Amoc.IDQ;
     case "SA":
-      return "IDS";
-    case "Tas":
-      return "IDT";
-    case "Vic": // fix: make all caps to be consistent with rest
-      return "IDV";
+      return Amoc.IDS;
+    case "TAS":
+      return Amoc.IDT;
+    case "VIC":
+      return Amoc.IDV;
     case "WA":
-      return "IDW";
+      return Amoc.IDW;
     case "ACT":
-      return "IDN";
+      return Amoc.IDN;
   }
 
-  return "unk";
+  return Amoc.unk;
 }

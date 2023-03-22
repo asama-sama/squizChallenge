@@ -1,29 +1,37 @@
-import fs from "fs";
+import { createWriteStream, mkdir} from "fs";
+
+const LOG_DIR = process.cwd() + "/logs"
 
 if (process.env.NODE_ENV == "production") {
   let stdLogger = console.log;
   let stdError = console.error;
 
-  // fix: use const
-  // fix: update the log file name
-  // fix: output logs into separate directory
-  var logFile = fs.createWriteStream("logs.log", { flags: "a" });
-
-  console.log = function (...args) {
-    stdLogger(args);
-
-    if (logFile.writable) {
-      logFile.write(JSON.stringify(args));
-      logFile.write("\n");
+  // fix: rotate logs
+  mkdir(LOG_DIR, err => {
+    if (err) {
+      console.error('error creating logs directory')
+      return
     }
-  };
+    const logFile = createWriteStream(LOG_DIR + "/logs.log", { flags: "a" });
 
-  console.error = function (...args) {
-    stdError(args);
+    console.log = function (...args) {
+      stdLogger(args);
 
-    if (logFile.writable) {
-      logFile.write(JSON.stringify(args));
-      logFile.write("\n");
-    }
-  };
+      if (logFile.writable) {
+        logFile.write(JSON.stringify(args));
+        logFile.write("\n");
+      }
+    };
+
+    console.error = function (...args) {
+      stdError(args);
+
+      if (logFile.writable) {
+        logFile.write(JSON.stringify(args));
+        logFile.write("\n");
+      }
+    };
+  }
+  )
 }
+  

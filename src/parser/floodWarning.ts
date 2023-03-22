@@ -1,23 +1,22 @@
 import { Downloader } from "../floods/Downloader";
 import { parseXml } from "./parser";
+import {ParsedWarning} from '../types/bom'
 
-// todo: these should all be typed
 export type Warning = {
-  productType: any,
-  service: any,
-  start: any,
-  expiry: any
+  productType: string | undefined,
+  service: string | undefined,
+  start: string | undefined,
+  expiry: string | undefined
 }
 
 export class FloodWarningParser {
-  private parsedXml: Object | null = null 
+  private parsedXml: ParsedWarning | null = null 
 
-  // fix: change any to a type
   constructor(private xmlString: string | undefined) { }
   
   async parse() {
     if (this.xmlString){
-      this.parsedXml = await parseXml(this.xmlString);
+      this.parsedXml = await parseXml(this.xmlString) as ParsedWarning;
     }
   }
 
@@ -29,20 +28,17 @@ export class FloodWarningParser {
   }
 
   async getWarning(): Promise<Warning> {
-    // fix: change any to a type
-    const obj: any = await this.getParsedXml()
+    const obj = await this.getParsedXml()
 
-    // fix: change productType to const and output the result from the switch into a new variable
-    // fix: possibly undefined
     if (!obj || !obj.amoc) return {
-      productType: null,
-      service: null,
-      start: null,
-      expiry: null
+      productType: undefined,
+      service: undefined,
+      start: undefined,
+      expiry: undefined
     }
-    let productType = (obj.amoc["product-type"] || [])[0];
-    // fix: need breaks
-    switch (productType) {
+    const productTypeCode = (obj.amoc["product-type"] || [])[0];
+    let productType
+    switch (productTypeCode) {
       case "A":
         productType = "Advice";
         break;
@@ -86,12 +82,10 @@ export class FloodWarningParser {
         productType = "Mixed";
         break;
     }
-    console.log(productType)
 
-    // fix: same as above, use const and a different variable for the result of the switch
-    let service = (obj.amoc["service"] || [])[0];
-
-    switch (service) {
+    const serviceCode = (obj.amoc["service"] || [])[0];
+    let service
+    switch (serviceCode) {
       case "COM":
         service = "Commercial Services";
         break;
@@ -135,30 +129,22 @@ export class FloodWarningParser {
     };
   }
   async getIssueTime() {
-    const obj: any = await this.getParsedXml()
-
-    // fix: use const
-    let issuetime = (obj.amoc["issue-time-utc"] || [])[0];
-
-    return issuetime;
+    const obj = await this.getParsedXml()
+    return (obj?.amoc["issue-time-utc"] || [])[0];;
   }
 
   async getEndTime() {
-    const obj: any = await this.getParsedXml()
-
-    let issuetime = (obj.amoc["expiry-time"] || [])[0];
-
-    return issuetime;
+    const obj = await this.getParsedXml()
+    return  (obj?.amoc["expiry-time"] || [])[0];
   }
 
-  // fix: unused code
-  async getWarningText(): Promise<string> {
-    const obj: any = await this.getParsedXml()
+  async getWarningText(): Promise<string | undefined> {
+    const obj = await this.getParsedXml()
     const downloader = new Downloader();
 
-    // fix: possible 'cannot read property of undefined' error here
-    const warningText = await downloader.downloadText(obj.amoc.identifier[0]);
+    if (!obj || !obj.amoc) return ""
 
+    const warningText = await downloader.downloadText(obj.amoc.identifier[0]);
     return warningText;
   }
 }

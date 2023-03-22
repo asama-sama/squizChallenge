@@ -22,7 +22,6 @@ app.get("/", async (req: GetWarningsRequest, res: GetWarningsResponse, next) => 
 
     const data = await getWarnings();
 
-
     let results: string[] = [];
     for (let key in data) {
       if (key.startsWith(state)) {

@@ -48,3 +48,5 @@ Other issues
 * parseXml(): move promise inside this function rather than needing it outside, and handle reject
 * parseXml(): include types
 * parseXml(): use import
+* import only required modules rather than entire module ie import {createWriteStream} from 'fs'
+* include @types/node
