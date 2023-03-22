@@ -1,6 +1,7 @@
 import { getAmocToStateId } from "./getAmocToStateId";
 
 describe("getAmocToStateId", () => {
+  // fix: it does not test what happens if an incorrect string is passed
   test("that it returns all states", () => {
     expect(getAmocToStateId("NT")).toEqual("IDD");
     expect(getAmocToStateId("NSW")).toEqual("IDN");

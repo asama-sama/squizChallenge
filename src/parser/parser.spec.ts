@@ -2,12 +2,15 @@ import { parseXml } from "./parser";
 import fs from "fs";
 import path from "path";
 
+// fix: describe the module being tested "parseXml"
+// fix: add error case for incorrectly formatted xml
 describe("parsing xml", () => {
   it("should parse xml", (done) => {
+    // fix: place test artifacts separate to source code
     const xml = fs.readFileSync(path.resolve(__dirname, "./IDD10307.amoc.xml"));
 
     parseXml(xml.toString(), (json) => {
-      console.log(JSON.stringify(json, null, 2));
+      console.log(JSON.stringify(json, null, 2)); // fix: don't leave logs in tests
       expect(json).toEqual({
         amoc: {
           $: {

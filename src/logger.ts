@@ -4,6 +4,8 @@ if (process.env.NODE_ENV == "production") {
   let stdLogger = console.log;
   let stdError = console.error;
 
+  // fix: use const
+  // fix: update the log file name
   var logFile = fs.createWriteStream("logs.log", { flags: "a" });
 
   console.log = function (...args) {

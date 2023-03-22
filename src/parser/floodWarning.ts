@@ -2,17 +2,24 @@ import { Downloader } from "../floods/Downloader";
 import { parseXml } from "./parser";
 
 export class FloodWarningParser {
+  // fix: change any to a type
+  // fix: rather than parsing the xml in each statement, we could parse it once in the constructor
+  // and reuse this
   constructor(private xmlString: any) {}
 
   async getWarning() {
+    // fix: change any to a type
+    // fix: use reject to handle the error from parseXml
     const obj: any = await new Promise((resolve, reject) => {
       parseXml(this.xmlString, (data) => {
         resolve(data);
       });
     });
 
+    // fix: change productType to const and output the result from the switch into a new variable
     let productType = (obj.amoc["product-type"] || [])[0];
 
+    // possible fix: probably breaks were intended here? 
     switch (productType) {
       case "A":
         productType = "Advice";
@@ -44,6 +51,7 @@ export class FloodWarningParser {
         productType = "Mixed";
     }
 
+    // fix: same as above, use const and a different variable for the result of the switch
     let service = (obj.amoc["service"] || [])[0];
 
     switch (service) {
@@ -90,18 +98,21 @@ export class FloodWarningParser {
     };
   }
   async getIssueTime() {
+    // fix: duplicate code
     const obj: any = await new Promise((resolve, reject) => {
       parseXml(this.xmlString, (data) => {
         resolve(data);
       });
     });
 
+    // fix: use const
     let issuetime = (obj.amoc["issue-time-utc"] || [])[0];
 
     return issuetime;
   }
 
   async getEndTime() {
+    // fix: duplicate code
     const obj: any = await new Promise((resolve, reject) => {
       parseXml(this.xmlString, (data) => {
         resolve(data);
@@ -113,6 +124,7 @@ export class FloodWarningParser {
     return issuetime;
   }
 
+  // fix: unused code
   async getWarningText(): Promise<string> {
     const obj: any = await new Promise((resolve, reject) => {
       parseXml(this.xmlString, (data) => {
@@ -121,6 +133,7 @@ export class FloodWarningParser {
     });
     const downloader = new Downloader();
 
+    // fix: possible 'cannot read property of undefined' error here
     const warningText = await downloader.downloadText(obj.amoc.identifier[0]);
 
     return warningText;

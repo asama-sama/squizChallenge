@@ -17,9 +17,9 @@ export class Downloader {
       const files = await client.list();
 
       for (var file in files) {
-        if (files[file].name.endsWith(".amoc.xml")) {
+        if (files[file].name.endsWith(".amoc.xml")) { // fix: this if statement is redundant with the one below
           if (`${key}.amoc.xml` == files[file].name) {
-            await client.download(`./${key}.xml`, files[file].name);
+            await client.download(`./${key}.xml`, files[file].name);length  // fix: .download is deprecated in favour of .downloadTo
           }
         }
       }
@@ -29,11 +29,11 @@ export class Downloader {
 
       return data;
     } catch (err) {
-      console.log(key + " file not found");
-      return "";
+      console.log(key + " file not found");   // fix: use console.error
+      return "";  // fix: throw error rather than returning empty string
     }
 
-    client.close();
+    client.close(); // fix: unreachable code. this would be better in a finally statement and removed above
   }
 
   readData(key: string): string {
@@ -41,6 +41,7 @@ export class Downloader {
   }
 
   async downloadText(key: string) {
+    // fix: this code is the same as the other code for connections. refactor it all to use the same code
     const client = new Client();
     client.ftp.verbose = true;
     let warningText = "";
@@ -57,8 +58,8 @@ export class Downloader {
       warningText = fs.readFileSync(`./${key}.txt`, {
         encoding: "utf-8",
       });
-    } catch (err) {
-      console.log(key + " file not found");
+    } catch (err) { // fix: return error rather than catch
+      console.log(key + " file not found"); // fix: use console.error
       return "";
     }
 
