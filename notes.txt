@@ -1,0 +1,50 @@
+major problems
+-----------------
+1. Code duplication
+* Downloader duplicates the same steps each time to initialise the connection. I 
+have abstracted this code into a single getClient() function.
+
+2. Types
+* I've updated the routes in index.ts to utilise types 
+for the request and response objects.
+* Many functions/variables were not typed, 'any' being used in many places.
+
+3. Error handling. 
+* Error response is very generic and not very informative to the user.
+I've created a new error class which includes the error status code as well as the message, and have
+added an error handling middleware which will give the correct response to the user based on the 
+error status.
+* console.log was being used in many places rather than console.error
+* misleading error message in download() "file not found"
+
+4. Optimisation 
+* Flood warning is calling parseXml before every method. I've refactored this to only needing to be
+called once by parsing in a separate function call, and saving the output in FloodWarningParser.
+
+5. Testing
+* Use mocks in tests rather than calling the actual API
+* tests are not clear on what they are testing, and they are not testing situations that
+may cause code to fail
+* Tests are logging, they should avoid this
+
+
+Other issues
+* 'cannot read property of undefined error' in getWarning
+* client not being closed in download()
+* client not closed in getWarnings if error occurs
+* breaks not in switches in floodWarning
+* getWarning() should throw an error to show it is not implemented
+* functions do not document what they are actually doing
+* redundant code in Downloader.download() in if statement
+* deprecated method client.download in use
+* 'const' could be used in many more places e.g. floodWarning.getIssueTime()
+* place test artifact data in different location away from source code
+* don't use 'var'
+* getAmotToStateId(): could be typed using enums. All cases are not consistent ie capitalisation
+* getAmotToStateId() test: does not test all cases
+* logger: logs should be rotated to be kept from becoming too large
+* download files from /warning into separate dir
+* undefined 'length' variable throwing error in download()
+* parseXml(): move promise inside this function rather than needing it outside, and handle reject
+* parseXml(): include types
+* parseXml(): use import

@@ -9,8 +9,6 @@ import { TypedRequesetParams, TypedRequestQuery } from './types/expressTypes';
 
 require("./logger.ts");
 
-console.log('env', process.env.NODE_ENV)
-
 const app = express();
 const port = 3000; // fix: would set this as an env var
 
@@ -48,7 +46,7 @@ app.get("/warning/:id", async (req: GetWarningRequest, res: GetWarningResponse, 
     const xmlid = req.params.id;
 
     const warning = await downloader.download(xmlid);
-    const warningParser = new FloodWarningParser(warning);
+    let warningParser = new FloodWarningParser(warning);
     const text = await downloader.downloadText(xmlid);
 
     res.send({ ...(await warningParser.getWarning()), text: text || "" });

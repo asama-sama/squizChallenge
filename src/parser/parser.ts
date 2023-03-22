@@ -1,10 +1,14 @@
 // http://www.bom.gov.au/schema/v1.7/amoc.xsd
-var parseString = require("xml2js").parseString;
+import {parseString} from "xml2js"
 
-// fix: type the result object
-export function parseXml(xml: string, callback: (result: any) => void) {
-  // fix: handle the error and also type it
-  parseString(xml, function (err: any, result: any) {
-    callback(result);
-  });
+export async function parseXml(xml: string) {
+  const parsedXml: Object = await new Promise((resolve, reject) => {
+    parseString(xml, function (err, result: Object) {
+      if (err) {
+        reject(err)
+      }
+      resolve(result);
+    });
+  })
+  return parsedXml
 }

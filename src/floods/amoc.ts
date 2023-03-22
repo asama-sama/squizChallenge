@@ -4,7 +4,8 @@ type Warnings = {
   [key: string]: boolean
 }
 
-// fix: document the intention of this function
+// This function connects to the BOM api and returns all warnings, 
+// ie all filenames in the format <id>.amoc.xml
 export async function getWarnings() {
   const downloader = new Downloader()
   const client = await downloader.getClient();
@@ -19,14 +20,14 @@ export async function getWarnings() {
     }
 
   } catch (err) {
-    console.error(err); // fix: should return this error rather than catching it so that handler can return the error
+    console.error(err); 
   }
 
-  client.close(); // fix: wont be reached in error
+  client.close(); 
   return warns;
 }
 
-// fix: this should throw an error to show that this is not implemented
+// gets an individual warning from the BOM api by given id
 export function getWarning(id: string) {
   throw new Error("getWarning not implemented")
 }

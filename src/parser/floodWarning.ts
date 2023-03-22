@@ -10,17 +10,15 @@ export type Warning = {
 }
 
 export class FloodWarningParser {
-  private parsedXml: any // give a type to this xml
+  private parsedXml: Object | null = null 
 
   // fix: change any to a type
-  constructor(private xmlString: any) { }
+  constructor(private xmlString: string | undefined) { }
   
   async parse() {
-    this.parsedXml = await new Promise((resolve, reject) => {
-      parseXml(this.xmlString, (data) => {
-        resolve(data);
-      });
-    });
+    if (this.xmlString){
+      this.parsedXml = await parseXml(this.xmlString);
+    }
   }
 
   async getParsedXml() {

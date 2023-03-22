@@ -34,10 +34,8 @@ export class Downloader {
       const files = await client.list();
 
       for (const file in files) {
-        if (files[file].name.endsWith(".amoc.xml")) { // fix: this if statement is redundant with the one below
           if (`${key}.amoc.xml` == files[file].name) {
-            await client.download(`./${key}.xml`, files[file].name);  // fix: .download is deprecated in favour of .downloadTo
-          }
+            await client.downloadTo(`./${key}.xml`, files[file].name); 
         }
       }
       client.close();
@@ -46,7 +44,7 @@ export class Downloader {
 
     } catch (err) {
       if (err instanceof Error) {
-        console.error(`key = ${key} ${err.message}`);   // fix: incorrect error message
+        console.error(`key = ${key} ${err.message}`);  
       }
     } 
     client.close(); 
@@ -63,12 +61,12 @@ export class Downloader {
     let warningText = "";
     try {
 
-      await client.download(`./${key}.txt`, key + ".txt");  // fix: deprecated
+      await client.downloadTo(`./${key}.txt`, key + ".txt");  
 
       warningText = fs.readFileSync(`./${key}.txt`, {
         encoding: "utf-8",
       });
-    } catch (err) { // fix: return error rather than catch
+    } catch (err) { 
       if (err instanceof Error) {
         console.error(key + " " + err.message); 
       }
