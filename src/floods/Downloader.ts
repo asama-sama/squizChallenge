@@ -1,9 +1,20 @@
 import { Client } from "basic-ftp";
 
-import fs from "fs";
+import { mkdir, readFileSync } from "fs";
 import { HttpError } from '../HttpError';
 
+let downloadDir = process.cwd() + "/downloadedFiles"
+
 export class Downloader {
+
+  constructor() {
+    mkdir(downloadDir, (err) => {
+      if (err && err.code !== 'EEXIST') {
+        console.error(err)
+        downloadDir = '.'
+      }
+    })
+  }
 
   async getClient() {
     const client = new Client();
@@ -35,7 +46,7 @@ export class Downloader {
 
       for (const file in files) {
           if (`${key}.amoc.xml` == files[file].name) {
-            await client.downloadTo(`./${key}.xml`, files[file].name); 
+            await client.downloadTo(`${downloadDir}/${key}.xml`, files[file].name); 
         }
       }
       client.close();
@@ -53,7 +64,7 @@ export class Downloader {
   }
 
   readData(key: string): string {
-    return fs.readFileSync(`./${key}.xml`, { encoding: "utf-8" });
+    return readFileSync(`${downloadDir}/${key}.xml`, { encoding: "utf-8" });
   }
 
   async downloadText(key: string) {
@@ -61,9 +72,9 @@ export class Downloader {
     let warningText = "";
     try {
 
-      await client.downloadTo(`./${key}.txt`, key + ".txt");  
+      await client.downloadTo(`${downloadDir}/${key}.txt`, key + ".txt");  
 
-      warningText = fs.readFileSync(`./${key}.txt`, {
+      warningText = readFileSync(`${downloadDir}/${key}.txt`, {
         encoding: "utf-8",
       });
     } catch (err) { 
