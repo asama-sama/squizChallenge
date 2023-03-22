@@ -6,6 +6,7 @@ if (process.env.NODE_ENV == "production") {
 
   // fix: use const
   // fix: update the log file name
+  // fix: output logs into separate directory
   var logFile = fs.createWriteStream("logs.log", { flags: "a" });
 
   console.log = function (...args) {
