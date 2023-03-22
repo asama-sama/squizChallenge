@@ -1,55 +1,94 @@
 import { Downloader } from "../floods/Downloader";
 import { parseXml } from "./parser";
 
-export class FloodWarningParser {
-  // fix: change any to a type
-  // fix: rather than parsing the xml in each statement, we could parse it once in the constructor
-  // and reuse this
-  constructor(private xmlString: any) {}
+// todo: these should all be typed
+export type Warning = {
+  productType: any,
+  service: any,
+  start: any,
+  expiry: any
+}
 
-  async getWarning() {
-    // fix: change any to a type
-    // fix: use reject to handle the error from parseXml
-    const obj: any = await new Promise((resolve, reject) => {
+export class FloodWarningParser {
+  private parsedXml: any // give a type to this xml
+
+  // fix: change any to a type
+  constructor(private xmlString: any) { }
+  
+  async parse() {
+    this.parsedXml = await new Promise((resolve, reject) => {
       parseXml(this.xmlString, (data) => {
         resolve(data);
       });
     });
+  }
+
+  async getParsedXml() {
+    if (!this.parsedXml) {
+      await this.parse()
+    }
+    return this.parsedXml
+  }
+
+  async getWarning(): Promise<Warning> {
+    // fix: change any to a type
+    const obj: any = await this.getParsedXml()
 
     // fix: change productType to const and output the result from the switch into a new variable
+    // fix: possibly undefined
+    if (!obj || !obj.amoc) return {
+      productType: null,
+      service: null,
+      start: null,
+      expiry: null
+    }
     let productType = (obj.amoc["product-type"] || [])[0];
-
-    // possible fix: probably breaks were intended here? 
+    // fix: need breaks
     switch (productType) {
       case "A":
         productType = "Advice";
+        break;
       case "B":
         productType = "Bundle";
+        break;
       case "C":
         productType = "Climate";
+        break;
       case "D":
         productType = "Metadata";
+        break;
       case "E":
         productType = "Analysis";
+        break;
       case "F":
         productType = "Forecast";
+        break;
       case "M":
         productType = "Numerical Weather Prediction";
+        break;
       case "O":
         productType = "Observation";
+        break;
       case "Q":
         productType = "Reference";
+        break;
       case "R":
         productType = "Radar";
+        break;
       case "S":
         productType = "Special";
+        break;
       case "T":
         productType = "Satellite";
+        break;
       case "W":
         productType = "Warning";
+        break;
       case "X":
         productType = "Mixed";
+        break;
     }
+    console.log(productType)
 
     // fix: same as above, use const and a different variable for the result of the switch
     let service = (obj.amoc["service"] || [])[0];
@@ -98,12 +137,7 @@ export class FloodWarningParser {
     };
   }
   async getIssueTime() {
-    // fix: duplicate code
-    const obj: any = await new Promise((resolve, reject) => {
-      parseXml(this.xmlString, (data) => {
-        resolve(data);
-      });
-    });
+    const obj: any = await this.getParsedXml()
 
     // fix: use const
     let issuetime = (obj.amoc["issue-time-utc"] || [])[0];
@@ -112,12 +146,7 @@ export class FloodWarningParser {
   }
 
   async getEndTime() {
-    // fix: duplicate code
-    const obj: any = await new Promise((resolve, reject) => {
-      parseXml(this.xmlString, (data) => {
-        resolve(data);
-      });
-    });
+    const obj: any = await this.getParsedXml()
 
     let issuetime = (obj.amoc["expiry-time"] || [])[0];
 
@@ -126,11 +155,7 @@ export class FloodWarningParser {
 
   // fix: unused code
   async getWarningText(): Promise<string> {
-    const obj: any = await new Promise((resolve, reject) => {
-      parseXml(this.xmlString, (data) => {
-        resolve(data);
-      });
-    });
+    const obj: any = await this.getParsedXml()
     const downloader = new Downloader();
 
     // fix: possible 'cannot read property of undefined' error here

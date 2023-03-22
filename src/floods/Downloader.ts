@@ -1,11 +1,15 @@
 import { Client } from "basic-ftp";
 
 import fs from "fs";
+import { HttpError } from '../HttpError';
 
 export class Downloader {
-  async download(key: string) {
+
+  async getClient() {
     const client = new Client();
-    client.ftp.verbose = true;
+    if (process.env.NODE_ENV !== 'production' && process.env.NODE !== 'test') {
+      client.ftp.verbose = true;
+    }
     try {
       await client.access({
         host: "ftp.bom.gov.au",
@@ -13,27 +17,41 @@ export class Downloader {
       });
 
       await client.cd("/anon/gen/fwo/");
+      return client
+    } catch (e) {
+      console.error(e)
+      if (e instanceof Error) {
+        throw new HttpError(e.message, 500)
+      }
+      throw e // here because typescript does not recognise the above will always occur
+    }
+  }
 
+  async download(key: string) {
+    let data
+    const client = await this.getClient()
+    try {
       const files = await client.list();
 
-      for (var file in files) {
+      for (const file in files) {
         if (files[file].name.endsWith(".amoc.xml")) { // fix: this if statement is redundant with the one below
           if (`${key}.amoc.xml` == files[file].name) {
-            await client.download(`./${key}.xml`, files[file].name);length  // fix: .download is deprecated in favour of .downloadTo
+            await client.download(`./${key}.xml`, files[file].name);  // fix: .download is deprecated in favour of .downloadTo
           }
         }
       }
       client.close();
 
-      const data = this.readData(key);
+      data = this.readData(key);
 
-      return data;
     } catch (err) {
-      console.log(key + " file not found");   // fix: use console.error
-      return "";  // fix: throw error rather than returning empty string
-    }
+      if (err instanceof Error) {
+        console.error(`key = ${key} ${err.message}`);   // fix: incorrect error message
+      }
+    } 
+    client.close(); 
 
-    client.close(); // fix: unreachable code. this would be better in a finally statement and removed above
+    return data;
   }
 
   readData(key: string): string {
@@ -41,26 +59,19 @@ export class Downloader {
   }
 
   async downloadText(key: string) {
-    // fix: this code is the same as the other code for connections. refactor it all to use the same code
-    const client = new Client();
-    client.ftp.verbose = true;
+    const client = await this.getClient()
     let warningText = "";
     try {
-      await client.access({
-        host: "ftp.bom.gov.au",
-        secure: false,
-      });
 
-      await client.cd("/anon/gen/fwo/");
-
-      await client.download(`./${key}.txt`, key + ".txt");
+      await client.download(`./${key}.txt`, key + ".txt");  // fix: deprecated
 
       warningText = fs.readFileSync(`./${key}.txt`, {
         encoding: "utf-8",
       });
     } catch (err) { // fix: return error rather than catch
-      console.log(key + " file not found"); // fix: use console.error
-      return "";
+      if (err instanceof Error) {
+        console.error(key + " " + err.message); 
+      }
     }
 
     client.close();

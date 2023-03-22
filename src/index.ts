@@ -1,30 +1,31 @@
-import { downloadTo } from "basic-ftp/dist/transfer";
-import express from "express";
+import express, {  Response } from "express";
 import { getWarnings } from "./floods/amoc";
 import { Downloader } from "./floods/Downloader";
 import { getAmocToStateId } from "./getAmocToStateId";
-import { FloodWarningParser } from "./parser/floodWarning";
-import { parseXml } from "./parser/parser";
+import { HttpError } from './HttpError';
+import { errorHandler } from './middleware/errorHandler';
+import { FloodWarningParser, Warning } from "./parser/floodWarning";
+import { TypedRequesetParams, TypedRequestQuery } from './types/expressTypes';
 
 require("./logger.ts");
+
+console.log('env', process.env.NODE_ENV)
 
 const app = express();
 const port = 3000; // fix: would set this as an env var
 
-const ERRORMESSAGE = "Something went wrong";  // fix: generic message. Would also keep constants in another location
+type GetWarningsRequest = TypedRequestQuery<{ state: string }>
+type GetWarningsResponse = Response <string[]>
 
-// fix: document the api parameters and responses
-// fix: type the request and response objects
-app.get("/", async (req, res) => {
+app.get("/", async (req: GetWarningsRequest, res: GetWarningsResponse, next) => {
   try {
+    if (typeof req.query.state !== 'string') throw new HttpError('state must be a string', 400)
+    const state = getAmocToStateId(req.query.state);  
+
     const data = await getWarnings();
 
-    const state = getAmocToStateId(req.query.state?.toString() || "");  // fix: as getAmocToStateId only expects a single string (not some string array parsed as a string)
-    // calling .toString here is inappropriate. We should check that req.query is of type string and throw
-    // an error if not, as it would be an invalid argument otherwise
-    // otherwise, we need to refactor getAmotToStateId to parse string arrays
 
-    let results = [];
+    let results: string[] = [];
     for (let key in data) {
       if (key.startsWith(state)) {
         results.push(key.replace(/\.amoc\.xml/, ""));
@@ -33,15 +34,15 @@ app.get("/", async (req, res) => {
 
     res.send(results); 
   } catch (error) {
-    console.log(error); // fix: use console.error
-    res.send(ERRORMESSAGE); // fix: send error status
-                            // fix: send specific error message
+    console.error(error); 
+    return next(error)
   }
 });
 
-// fix: describe request parameters and responses for this route
-// fix: type request and response objects
-app.get("/warning/:id", async (req, res) => {
+type GetWarningRequest = TypedRequesetParams<{ id: string }>
+type GetWarningResponse = Response< Warning & {text: string}>
+
+app.get("/warning/:id", async (req: GetWarningRequest, res: GetWarningResponse, next) => {
   try {
     const downloader = new Downloader();
     const xmlid = req.params.id;
@@ -52,11 +53,12 @@ app.get("/warning/:id", async (req, res) => {
 
     res.send({ ...(await warningParser.getWarning()), text: text || "" });
   } catch (error) {
-    console.log(error);     // fix: use console.error
-    res.send(ERRORMESSAGE); // fix: use a more specific error message
-                            // fix: send an http error status
+    console.error(error);     
+    return next(error)
   }
 });
+
+app.use(errorHandler)
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
