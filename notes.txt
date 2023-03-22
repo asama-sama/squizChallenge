@@ -29,6 +29,7 @@ may cause code to fail
 
 
 Other issues
+* downloaded files not being cleared
 * 'cannot read property of undefined error' in getWarning
 * client not being closed in download()
 * client not closed in getWarnings if error occurs
